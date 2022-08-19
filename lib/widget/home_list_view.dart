@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_table_calendar/provider/table_calendar_provider.dart';
+import 'package:flutter_table_calendar/repository/pointer_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+typedef OnPointerMoveTop = void Function(double pixels);
+
 class HomeListView extends StatefulWidget {
   final int count;
+  final OnPointerMoveTop? onPointerMoveTop;
 
-  const HomeListView({Key? key, this.count = 0}) : super(key: key);
+  const HomeListView({Key? key, this.count = 0, this.onPointerMoveTop}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _HomeListViewState();
@@ -21,25 +25,7 @@ class _HomeListViewState extends State<HomeListView> {
     _controller.addListener(() {
       ScrollPosition position = _controller.position;
       double pixels = position.pixels;
-      double extentInside = position.extentInside;
-      print('extentInside = $extentInside');
-      if (pixels == 0) {
-        var provider = Provider.of<TableCalendarProvider>(
-          context,
-          listen: false,
-        );
-        if (CalendarFormat.week == provider.calendarFormat) {
-          provider.onFormatChanged(CalendarFormat.month);
-        }
-      } else if (pixels > 0) {
-        var provider = Provider.of<TableCalendarProvider>(
-          context,
-          listen: false,
-        );
-        if (CalendarFormat.month == provider.calendarFormat) {
-          provider.onFormatChanged(CalendarFormat.week);
-        }
-      }
+      widget.onPointerMoveTop?.call(pixels);
     });
   }
 
@@ -56,39 +42,44 @@ class _HomeListViewState extends State<HomeListView> {
       view = Scrollbar(
         child: ReorderableListView.builder(
           itemBuilder: (_, index) {
-            return ListTile(
-              key: ValueKey(index),
-              title: Text(index.toString()),
-              onTap: () => print('index = $index'),
-            );
+            var key = ValueKey(index);
+            return ListTile(key: key, title: Text(index.toString()));
           },
           itemCount: widget.count,
           onReorder: (int oldIndex, int newIndex) {},
           scrollController: _controller,
           physics: const AlwaysScrollableScrollPhysics(),
         ),
+        controller: _controller,
       );
     } else {
-      Size size = MediaQuery.of(context).size;
       view = ListView(
         children: [
           Container(
             alignment: Alignment.topCenter,
             child: const Text('暂无数据'),
-            width: size.width,
-            height: size.height,
             color: Colors.grey[200],
             padding: const EdgeInsets.only(top: 200),
           ),
         ],
-        controller: _controller,
-        physics: const AlwaysScrollableScrollPhysics(),
       );
     }
     return RefreshIndicator(
       child: view,
       onRefresh: () async {
         return await Future.delayed(const Duration(seconds: 1));
+      },
+      notificationPredicate: (ScrollNotification notification) {
+        var provider = Provider.of<TableCalendarProvider>(
+          context,
+          listen: false,
+        );
+        var format = provider.calendarFormat;
+        var isEnable = PointerRepository.instance.isEnable;
+        if (CalendarFormat.week == format && !isEnable) {
+          return true;
+        }
+        return CalendarFormat.month == format && isEnable;
       },
     );
   }

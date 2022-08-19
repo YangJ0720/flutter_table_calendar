@@ -13,45 +13,48 @@ class HeaderSliver extends SliverPersistentHeaderDelegate {
     return Stack(
       children: [
         Positioned(
-          child: Container(child: Consumer<TableCalendarProvider>(
-            builder: (_, value, child) {
-              var dateTime = value.selectedDay;
-              var calendarFormat = value.calendarFormat;
-              if (CalendarFormat.month == calendarFormat) {
-                _extent = _maxExtent;
-              } else {
-                _extent = _minExtent;
-              }
-              return TableCalendar(
-                focusedDay: dateTime,
-                firstDay: dateTime,
-                lastDay: dateTime,
-                locale: 'zh',
-                headerVisible: false,
-                daysOfWeekHeight: 25,
-                startingDayOfWeek: StartingDayOfWeek.monday,
-                calendarFormat: calendarFormat,
-                availableCalendarFormats: const {
-                  CalendarFormat.week: 'Week',
-                  CalendarFormat.month: 'Month',
-                },
-                selectedDayPredicate: (day) => isSameDay(dateTime, day),
-                onDaySelected: (selectedDay, focusedDay) {
-                  value.onDaySelected(selectedDay);
-                },
-                onFormatChanged: (CalendarFormat format) {
-                  if (CalendarFormat.month == format) {
-                    value.onFormatChanged(CalendarFormat.week);
-                  } else {
-                    value.onFormatChanged(CalendarFormat.month);
-                  }
-                },
-                onPageChanged: (DateTime focusedDay) {
-                  value.onDaySelected(focusedDay);
-                },
-              );
-            },
-          ), color: Colors.black87,),
+          child: Container(
+            child: Consumer<TableCalendarProvider>(
+              builder: (_, value, child) {
+                var dateTime = value.selectedDay;
+                var calendarFormat = value.calendarFormat;
+                if (CalendarFormat.month == calendarFormat) {
+                  _extent = _maxExtent;
+                } else {
+                  _extent = _minExtent;
+                }
+                return TableCalendar(
+                  focusedDay: dateTime,
+                  firstDay: dateTime,
+                  lastDay: dateTime,
+                  locale: 'zh',
+                  headerVisible: false,
+                  daysOfWeekHeight: 25,
+                  startingDayOfWeek: StartingDayOfWeek.monday,
+                  calendarFormat: calendarFormat,
+                  availableCalendarFormats: const {
+                    CalendarFormat.week: 'Week',
+                    CalendarFormat.month: 'Month',
+                  },
+                  selectedDayPredicate: (day) => isSameDay(dateTime, day),
+                  onDaySelected: (selectedDay, focusedDay) {
+                    value.onDaySelected(selectedDay);
+                  },
+                  onFormatChanged: (CalendarFormat format) {
+                    if (CalendarFormat.month == format) {
+                      value.onFormatChanged(CalendarFormat.week);
+                    } else {
+                      value.onFormatChanged(CalendarFormat.month);
+                    }
+                  },
+                  onPageChanged: (DateTime focusedDay) {
+                    value.onDaySelected(focusedDay);
+                  },
+                );
+              },
+            ),
+            color: Colors.black87,
+          ),
           left: 0,
           top: 0,
           right: 0,
